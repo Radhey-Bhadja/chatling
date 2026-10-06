@@ -519,6 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSendMessage) btnSendMessage.addEventListener('click', handleSendMessage);
 
   if (messageInput) {
+    messageInput.addEventListener('focus', () => {
+      setTimeout(() => scrollToBottom(), 300);
+    });
+
     messageInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -539,6 +543,15 @@ document.addEventListener('DOMContentLoaded', () => {
           activeConn.send({ type: 'stop-typing' });
         }
       }, 1500);
+    });
+  }
+
+  // Handle Mobile Virtual Keyboard (visualViewport) Viewport Adjustment
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      if (chatView && !chatView.classList.contains('hidden')) {
+        scrollToBottom();
+      }
     });
   }
 
