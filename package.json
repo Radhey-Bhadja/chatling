@@ -2,7 +2,7 @@
   "name": "chatling-app",
   "version": "1.0.0",
   "description": "Ephemeral 1-to-1 real-time web chat app",
-  "main": "server.js",
+  "main": "index.html",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
@@ -10,15 +10,10 @@
   "keywords": [
     "chatling",
     "chat",
-    "socket.io",
-    "express",
+    "webrtc",
     "ephemeral",
     "realtime"
   ],
   "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5"
-  }
+  "license": "MIT"
 }
