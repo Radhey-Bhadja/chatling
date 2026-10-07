@@ -93,13 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function switchHomeTab(tab) {
     if (!tabCreate || !tabJoin || !sectionCreate || !sectionJoin) return;
     if (tab === 'create') {
-      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
-      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
+      tabCreate.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md transition-all cursor-pointer';
+      tabJoin.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer';
       sectionCreate.classList.remove('hidden');
       sectionJoin.classList.add('hidden');
     } else {
-      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
-      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
+      tabJoin.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md transition-all cursor-pointer';
+      tabCreate.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer';
       sectionJoin.classList.remove('hidden');
       sectionCreate.classList.add('hidden');
       if (joinCodeInput) joinCodeInput.focus();

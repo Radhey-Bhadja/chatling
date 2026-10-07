@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Chatling | Ephemeral Serverless 1-to-1 Chat</title>
+  <title>Chatling | Private Peer-to-Peer Ephemeral Chat</title>
+  <link rel="icon" type="image/png" href="logo.png" />
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -21,10 +22,10 @@
               cyan: '#06b6d4'
             },
             dark: {
-              bg: '#080c14',
+              bg: '#090d16',
               panel: '#0f172a',
-              card: '#131c31',
-              border: '#1e293b'
+              card: '#1e293b',
+              border: '#334155'
             }
           }
         }
@@ -34,89 +35,79 @@
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body class="h-[100dvh] w-screen overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+<body class="h-[100dvh] w-screen overflow-hidden bg-slate-950 dark:bg-dark-bg text-slate-100 font-sans antialiased transition-colors duration-300">
 
   <!-- Toast Container -->
   <div id="toast-container" class="fixed top-4 right-4 sm:top-5 sm:right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-[90vw] sm:max-w-sm"></div>
 
   <!-- Connection Warning Banner -->
-  <div id="connection-banner" class="hidden fixed top-0 left-0 right-0 z-50 bg-amber-500 text-white text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 px-3 sm:px-4 text-center shadow-lg backdrop-blur-md">
-    ⚠️ Connection offline. Attempting WebRTC reconnect...
+  <div id="connection-banner" class="hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 to-amber-500 text-white text-[11px] sm:text-xs font-bold py-2 px-4 text-center shadow-xl backdrop-blur-md">
+    ⚡ Connection offline. Attempting automatic WebRTC reconnect...
   </div>
 
   <!-- HOME VIEW (Room Creation / Join Screen) -->
-  <div id="home-view" class="h-full w-full flex items-center justify-center p-3 sm:p-4 md:p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950">
+  <div id="home-view" class="h-full w-full flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950">
     
-    <!-- Ambient Backdrop Lights -->
-    <div class="absolute -top-32 -left-32 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-72 sm:w-96 h-72 sm:h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- Ambient Dynamic Glow Orbs -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/15 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none"></div>
 
-    <div class="glass-card w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl shadow-2xl border border-white/20 dark:border-slate-800/80 p-5 sm:p-6 md:p-8 transition-all relative z-10 glow-subtle">
+    <div class="glass-surface w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl elevation-card p-6 sm:p-8 transition-all relative z-10 border border-white/10 dark:border-slate-800">
       
       <!-- Brand Header -->
-      <div class="text-center mb-6 sm:mb-7 select-none">
-        <div class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 text-white mb-2.5 sm:mb-3 shadow-lg shadow-emerald-500/30 transform hover:scale-105 transition-transform duration-300">
-          <svg class="w-8 h-8 sm:w-9 sm:h-9" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-          </svg>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Chatling</h1>
-        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Ephemeral • Serverless • Peer-to-Peer 1-to-1 Chat</p>
-
-        <!-- Feature Badges -->
-        <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-3.5 text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-          <span class="px-2.5 py-0.5 sm:py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">🔒 E2E P2P</span>
-          <span class="px-2.5 py-0.5 sm:py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">⚡ Zero Server</span>
-          <span class="px-2.5 py-0.5 sm:py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">🌐 Zero DB</span>
+      <div class="text-center mb-6 sm:mb-8 select-none">
+        <div class="flex items-center justify-center mb-4">
+          <img src="logo.png" alt="Chatling Logo" class="h-20 sm:h-24 max-w-full object-contain filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.3)] transition-transform duration-300 hover:scale-105" />
         </div>
       </div>
 
       <!-- Mode Selector Tabs -->
-      <div class="flex rounded-2xl bg-slate-200/70 dark:bg-slate-900/80 p-1 mb-5 sm:mb-6 border border-slate-300/50 dark:border-slate-800">
-        <button type="button" id="tab-create" class="flex-1 py-2 sm:py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm transition-all cursor-pointer">
+      <div class="flex rounded-2xl bg-slate-900/90 dark:bg-slate-950/80 p-1.5 mb-6 border border-slate-800/80 shadow-inner">
+        <button type="button" id="tab-create" class="flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md transition-all cursor-pointer">
           Create Room
         </button>
-        <button type="button" id="tab-join" class="flex-1 py-2 sm:py-2.5 text-xs font-bold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer">
+        <button type="button" id="tab-join" class="flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">
           Join Room
         </button>
       </div>
 
       <!-- Create Room Section -->
-      <div id="section-create" class="space-y-4 sm:space-y-5">
-        <div class="text-center p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 select-none">
-          <span class="text-[10px] sm:text-[11px] uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500">6-Digit Room Code</span>
-          <div id="created-code-display" class="text-3xl sm:text-4xl font-extrabold tracking-wider sm:tracking-widest text-emerald-600 dark:text-emerald-400 my-1.5 sm:my-2 font-mono drop-shadow-sm">
+      <div id="section-create" class="space-y-5">
+        <div class="text-center p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md select-none">
+          <span class="text-[10px] sm:text-[11px] uppercase tracking-widest font-extrabold text-emerald-400/90">6-Digit Room Code</span>
+          <div id="created-code-display" class="text-3xl sm:text-4xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 my-2 font-mono drop-shadow-sm">
             ------
           </div>
-          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Share code or link with partner to connect.</p>
+          <p class="text-[11px] sm:text-xs text-slate-400">Share this code with your partner to start chatting.</p>
         </div>
 
-        <button type="button" id="btn-generate-code" class="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        <button type="button" id="btn-generate-code" class="w-full py-3.5 sm:py-4 px-5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-cyan-600 hover:from-emerald-400 hover:to-cyan-500 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
           </svg>
           Generate Room Code
         </button>
 
         <div id="create-actions" class="hidden space-y-3 pt-1">
-          <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
-            <button type="button" id="btn-copy-code" class="py-2.5 px-2.5 sm:px-3 bg-slate-200/80 dark:bg-slate-800/90 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl text-[11px] sm:text-xs text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-              <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" id="btn-copy-code" class="py-3 px-3 bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/60 font-semibold rounded-xl text-xs text-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
               </svg>
               Copy Code
             </button>
-            <button type="button" id="btn-copy-link" class="py-2.5 px-2.5 sm:px-3 bg-slate-200/80 dark:bg-slate-800/90 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl text-[11px] sm:text-xs text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-              <svg class="w-4 h-4 text-cyan-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="button" id="btn-copy-link" class="py-3 px-3 bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/60 font-semibold rounded-xl text-xs text-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
               </svg>
               Copy Link
             </button>
           </div>
 
-          <button type="button" id="btn-enter-chat" class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-500 hover:opacity-95 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
+          <button type="button" id="btn-enter-chat" class="w-full py-3.5 sm:py-4 px-5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
             Enter Chat Room
-            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
           </button>
@@ -124,9 +115,9 @@
       </div>
 
       <!-- Join Room Section -->
-      <div id="section-join" class="hidden space-y-4 sm:space-y-5">
+      <div id="section-join" class="hidden space-y-5">
         <div>
-          <label for="join-code-input" class="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2 select-none">
+          <label for="join-code-input" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 select-none">
             Enter 6-Digit Room Code
           </label>
           <input 
@@ -134,78 +125,79 @@
             id="join-code-input" 
             maxlength="6" 
             placeholder="e.g. 839201" 
-            class="w-full text-center text-2xl sm:text-3xl font-mono font-extrabold tracking-wider sm:tracking-widest py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all uppercase shadow-inner"
+            class="w-full text-center text-3xl font-mono font-extrabold tracking-widest py-3 px-4 rounded-2xl border border-slate-700/80 bg-slate-900/90 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all uppercase shadow-inner"
           />
         </div>
 
-        <button type="button" id="btn-join-room" class="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
+        <button type="button" id="btn-join-room" class="w-full py-3.5 sm:py-4 px-5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
           Join Room
-          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 16l-4-4m0 0l4-4m-4 4h14"/>
           </svg>
         </button>
       </div>
 
-      <!-- Footer Info -->
-      <div class="mt-6 sm:mt-8 pt-3 sm:pt-4 border-t border-slate-200/50 dark:border-slate-800/80 text-center text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 font-medium select-none">
-        🔒 WebRTC P2P • Data purges instantly upon exit.
+      <!-- Footer Security Guarantee -->
+      <div class="mt-8 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-400 font-medium select-none flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <span>End-to-End Encrypted • Peer-to-Peer • Instant Data Purge</span>
       </div>
     </div>
   </div>
 
   <!-- CHAT VIEW (Chatling Interface) -->
-  <div id="chat-view" class="hidden h-full w-full flex flex-col bg-slate-100 dark:bg-dark-bg">
+  <div id="chat-view" class="hidden h-full w-full flex flex-col bg-slate-950">
 
     <!-- Chatling Header Bar -->
-    <header class="h-14 sm:h-16 px-3 sm:px-6 md:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shrink-0 shadow-sm z-10 select-none">
+    <header class="h-16 px-4 sm:px-6 md:px-8 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between shrink-0 shadow-md z-10 select-none">
       
       <!-- Partner Status & Info -->
-      <div class="flex items-center gap-2.5 sm:gap-3">
+      <div class="flex items-center gap-3">
         <!-- Partner Avatar -->
         <div class="relative shrink-0">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base sm:text-lg shadow-sm">
-            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-lg shadow-inner">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
           </div>
-          <div id="status-indicator" class="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500 border-2 border-white dark:border-slate-900"></div>
+          <div id="status-indicator" class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-amber-500 border-2 border-slate-900"></div>
         </div>
 
         <div class="min-w-0">
-          <h2 class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm leading-tight truncate">1-to-1 Partner</h2>
-          <p id="status-text" class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium truncate">Waiting for partner...</p>
+          <h2 class="font-bold text-white text-sm leading-tight truncate">Peer Partner</h2>
+          <p id="status-text" class="text-xs text-amber-400 font-medium truncate">Connecting to peer...</p>
         </div>
       </div>
 
       <!-- Header Tools (Code Pill, Theme, Exit) -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
+      <div class="flex items-center gap-2">
         <!-- Room Code Pill -->
-        <button type="button" id="header-code-pill" title="Click to copy room code" class="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-mono font-bold text-slate-700 dark:text-slate-200 transition-all border border-slate-200/60 dark:border-slate-700 cursor-pointer">
-          <span class="text-slate-400 dark:text-slate-500 text-[10px]">ROOM:</span>
-          <span id="header-room-code" class="text-emerald-500 font-extrabold">------</span>
+        <button type="button" id="header-code-pill" title="Click to copy room code" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 transition-all border border-slate-700/70 cursor-pointer shadow-sm">
+          <span class="text-slate-400 text-[10px] tracking-wider">ROOM:</span>
+          <span id="header-room-code" class="text-emerald-400 font-extrabold">------</span>
         </button>
 
         <!-- Clear Chat Button -->
-        <button type="button" id="btn-clear-chat" title="Clear Local Chat" class="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" id="btn-clear-chat" title="Clear Local Chat" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>
         </button>
 
         <!-- Theme Toggle Button -->
-        <button type="button" id="btn-theme-toggle" title="Toggle Theme" class="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer">
-          <!-- Sun icon (Dark mode active) -->
-          <svg id="icon-sun" class="w-4 h-4 sm:w-5 sm:h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" id="btn-theme-toggle" title="Toggle Theme" class="p-2 text-slate-400 hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer">
+          <svg id="icon-sun" class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
           </svg>
-          <!-- Moon icon (Light mode active) -->
-          <svg id="icon-moon" class="w-4 h-4 sm:w-5 sm:h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg id="icon-moon" class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
           </svg>
         </button>
 
         <!-- Leave Chat Button -->
-        <button type="button" id="btn-leave-chat" class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+        <button type="button" id="btn-leave-chat" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer border border-red-500/20">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
@@ -215,22 +207,22 @@
     </header>
 
     <!-- Chat Messages Window -->
-    <main id="chat-messages" class="flex-1 wa-chat-bg overflow-y-auto p-3 sm:p-4 md:px-16 space-y-2.5 sm:space-y-3">
+    <main id="chat-messages" class="flex-1 wa-chat-bg overflow-y-auto p-4 md:px-16 space-y-3">
       
-      <!-- Ephemeral Security Banner -->
-      <div class="flex justify-center my-2 sm:my-3 select-none">
-        <div class="bg-amber-500/10 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-[10px] sm:text-xs px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl shadow-sm text-center max-w-xs sm:max-w-md flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Security Disclaimer Banner -->
+      <div class="flex justify-center my-3 select-none">
+        <div class="bg-slate-900/80 border border-emerald-500/30 text-emerald-300 text-xs px-4 py-2 rounded-2xl shadow-lg backdrop-blur-md flex items-center gap-2 max-w-md">
+          <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
           </svg>
-          <span>End-to-End Peer Connection • Zero Server Storage • Cleared on exit</span>
+          <span>End-to-End P2P Connection • Zero Server Data Logs</span>
         </div>
       </div>
 
     </main>
 
     <!-- Typing Indicator Area -->
-    <div id="typing-indicator" class="hidden px-4 sm:px-6 py-1.5 text-[11px] sm:text-xs text-emerald-500 font-bold bg-white/60 dark:bg-slate-900/60 flex items-center gap-1.5 border-t border-slate-200/50 dark:border-slate-800 select-none backdrop-blur-sm">
+    <div id="typing-indicator" class="hidden px-6 py-2 text-xs text-emerald-400 font-bold bg-slate-900/80 flex items-center gap-2 border-t border-slate-800 select-none backdrop-blur-md">
       <span>Partner is typing</span>
       <span class="inline-flex gap-0.5">
         <span class="typing-dot">.</span>
@@ -240,10 +232,10 @@
     </div>
 
     <!-- Input Footer Bar -->
-    <footer class="p-2.5 sm:p-3.5 bg-white/90 dark:bg-slate-900/90 border-t border-slate-200/80 dark:border-slate-800 backdrop-blur-md relative z-20">
+    <footer class="p-3 sm:p-4 bg-slate-900/95 border-t border-slate-800 backdrop-blur-xl relative z-20">
       
-      <!-- Simple Emoji Picker Popup -->
-      <div id="emoji-picker" class="hidden absolute bottom-16 left-2 right-2 sm:left-4 sm:right-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl p-2.5 sm:p-3 grid grid-cols-5 gap-1.5 sm:gap-2 text-xl sm:text-2xl z-30 select-none max-w-[280px] sm:max-w-sm mx-auto glow-subtle">
+      <!-- Emoji Picker Popup -->
+      <div id="emoji-picker" class="hidden absolute bottom-20 left-4 bg-slate-800/95 border border-slate-700/80 rounded-3xl shadow-2xl p-3 grid grid-cols-5 gap-2 text-2xl z-30 select-none max-w-sm glow-subtle backdrop-blur-xl">
         <button type="button" class="emoji-btn hover:scale-125 transition-transform cursor-pointer p-1">😊</button>
         <button type="button" class="emoji-btn hover:scale-125 transition-transform cursor-pointer p-1">😂</button>
         <button type="button" class="emoji-btn hover:scale-125 transition-transform cursor-pointer p-1">❤️</button>
@@ -261,15 +253,15 @@
         <button type="button" class="emoji-btn hover:scale-125 transition-transform cursor-pointer p-1">✨</button>
       </div>
 
-      <div class="flex items-center gap-2 max-w-4xl mx-auto">
+      <div class="flex items-center gap-2.5 max-w-5xl mx-auto">
         <!-- Emoji Toggle Button -->
-        <button type="button" id="btn-emoji-toggle" class="p-2 text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors rounded-full cursor-pointer shrink-0">
+        <button type="button" id="btn-emoji-toggle" class="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-full transition-colors cursor-pointer shrink-0">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </button>
 
-        <!-- Text Input Field with WhatsApp Keyboard Attributes -->
+        <!-- Message Input Field -->
         <input 
           type="text" 
           id="message-input" 
@@ -279,11 +271,11 @@
           autocomplete="off"
           autocorrect="on"
           capitalize="sentences"
-          class="flex-1 py-2.5 sm:py-3 px-4 sm:px-5 bg-white dark:bg-[#2a3942] text-slate-900 dark:text-slate-100 rounded-full border border-slate-200/80 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs sm:text-sm shadow-sm transition-all min-w-0"
+          class="flex-1 py-3 px-5 bg-slate-800/80 text-white rounded-full border border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm shadow-inner transition-all min-w-0 placeholder-slate-400"
         />
 
-        <!-- WhatsApp Iconic Paper Plane Send Button -->
-        <button type="button" id="btn-send-message" title="Send Message" class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center cursor-pointer shrink-0">
+        <!-- Send Button -->
+        <button type="button" id="btn-send-message" title="Send Message" class="w-11 h-11 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:scale-95 text-white rounded-full shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center cursor-pointer shrink-0">
           <svg class="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
           </svg>
