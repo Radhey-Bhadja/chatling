@@ -259,7 +259,7 @@
         <button type="button" class="emoji-btn hover:scale-125 transition-transform cursor-pointer p-1">✨</button>
       </div>
 
-      <div class="flex items-center gap-2 max-w-4xl mx-auto">
+      <form id="message-form" class="flex items-center gap-2 max-w-4xl mx-auto" onsubmit="return false;">
         <!-- Emoji Toggle Button -->
         <button type="button" id="btn-emoji-toggle" class="p-2 text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors rounded-full cursor-pointer shrink-0">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,12 +281,12 @@
         />
 
         <!-- WhatsApp Iconic Paper Plane Send Button -->
-        <button type="button" id="btn-send-message" title="Send Message" class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center cursor-pointer shrink-0">
+        <button type="submit" id="btn-send-message" title="Send Message" class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center cursor-pointer shrink-0">
           <svg class="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
           </svg>
         </button>
-      </div>
+      </form>
     </footer>
 
   </div>

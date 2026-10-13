@@ -619,6 +619,15 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToBottom();
   }
 
+  const messageForm = document.getElementById('message-form');
+
+  if (messageForm) {
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+  }
+
   if (btnSendMessage) {
     btnSendMessage.addEventListener('click', (e) => {
       e.preventDefault();
@@ -630,18 +639,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Dismiss keyboard when user touches or clicks the blank background of the chat
+  // Dismiss keyboard when user touches or clicks the blank background/container of the chat
   if (chatMessages) {
     const dismissKeyboard = (e) => {
-      // Don't blur if user tapped a button, link, or emoji within chat
-      if (e.target.closest('button, a, input, textarea')) return;
+      // Don't blur if user tapped a button, link, emoji, or message bubble text
+      if (e.target.closest('button, a, input, textarea, .bubble')) return;
       if (document.activeElement === messageInput) {
         messageInput.blur();
       }
     };
 
     chatMessages.addEventListener('touchstart', dismissKeyboard, { passive: true });
-    chatMessages.addEventListener('click', dismissKeyboard);
+    chatMessages.addEventListener('mousedown', dismissKeyboard);
   }
 
   if (messageInput) {
