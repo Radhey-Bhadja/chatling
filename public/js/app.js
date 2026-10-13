@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // WebRTC ICE Server Configuration for Live HTTPS / Mobile Network Traversal
+  // WebRTC ICE Server Configuration for Live HTTPS / Mobile Network Traversal (STUN + TURN Fallback)
   const PEER_CONFIG = {
     config: {
       iceServers: [
@@ -8,7 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
         { urls: 'stun:stun2.l.google.com:19302' },
         { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:stun4.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478' }
+        { urls: 'stun:global.stun.twilio.com:3478' },
+        // OpenRelay Public TURN Server fallback for symmetric NAT / strict mobile firewalls
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelay',
+          credential: 'openrelay'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelay',
+          credential: 'openrelay'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelay',
+          credential: 'openrelay'
+        }
       ]
     },
     debug: 0
@@ -93,13 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function switchHomeTab(tab) {
     if (!tabCreate || !tabJoin || !sectionCreate || !sectionJoin) return;
     if (tab === 'create') {
-      tabCreate.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-emerald-500 text-white shadow-sm transition-all cursor-pointer';
-      tabJoin.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
+      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
+      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
       sectionCreate.classList.remove('hidden');
       sectionJoin.classList.add('hidden');
     } else {
-      tabJoin.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-emerald-500 text-white shadow-sm transition-all cursor-pointer';
-      tabCreate.className = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
+      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
+      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
       sectionJoin.classList.remove('hidden');
       sectionCreate.classList.add('hidden');
       if (joinCodeInput) joinCodeInput.focus();
@@ -117,7 +133,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (headerCodePill) headerCodePill.classList.remove('hidden');
     if (messageInput) messageInput.focus();
     updatePartnerStatus(partnerConnected);
+
+    // Push browser history state so mobile hardware back button exits room naturally
+    if (window.history && window.history.pushState) {
+      window.history.pushState({ inChat: true, room: code }, '', `?room=${code}`);
+    }
   }
+
+  // Handle hardware / browser back button navigation
+  window.addEventListener('popstate', (e) => {
+    if (chatView && !chatView.classList.contains('hidden')) {
+      // User tapped hardware Back button while in chat
+      leaveChatRoom(false);
+    }
+  });
 
   /**
    * Update Partner Status Display
@@ -157,13 +186,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const bottomAnchor = document.getElementById('messages-bottom-anchor');
+
   /**
-   * Scroll Chat Window to Bottom
+   * Scroll Chat Window to Bottom (WhatsApp Style)
    */
-  function scrollToBottom() {
-    if (chatMessages) {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+  function scrollToBottom(behavior = 'smooth') {
+    if (!chatMessages) return;
+    
+    // Primary anchor scroll
+    if (bottomAnchor) {
+      bottomAnchor.scrollIntoView({ behavior, block: 'end' });
+    } else {
+      chatMessages.scrollTo({
+        top: chatMessages.scrollHeight,
+        behavior
+      });
     }
+
+    // Safety fallback for mobile browser reflows (e.g. keyboard animation)
+    setTimeout(() => {
+      if (bottomAnchor) {
+        bottomAnchor.scrollIntoView({ behavior: 'auto', block: 'end' });
+      } else {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }, 120);
   }
 
   /**
@@ -216,8 +264,17 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     wrapper.appendChild(bubble);
-    chatMessages.appendChild(wrapper);
+    if (bottomAnchor && bottomAnchor.parentNode === chatMessages) {
+      chatMessages.insertBefore(wrapper, bottomAnchor);
+    } else {
+      chatMessages.appendChild(wrapper);
+    }
     scrollToBottom();
+
+    // Haptic vibration feedback for native app feel
+    if (navigator.vibrate) {
+      navigator.vibrate(isOutgoing ? 15 : [25, 50, 25]);
+    }
   }
 
   /**
@@ -301,7 +358,51 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabCreate) tabCreate.addEventListener('click', () => switchHomeTab('create'));
   if (tabJoin) tabJoin.addEventListener('click', () => switchHomeTab('join'));
 
-  // Generate Room Code Action
+  // Generate Room Code Action with automatic collision recovery
+  function createRoomSession(retryCount = 0) {
+    if (retryCount > 4) {
+      showToast('Could not find available room ID. Please try again.', 'error');
+      return;
+    }
+
+    // Random 6-digit numeric room code
+    const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const peerId = `chatling-v1-${roomCode}`;
+
+    if (peer) peer.destroy();
+
+    peer = new Peer(peerId, PEER_CONFIG);
+    
+    peer.on('error', (err) => {
+      console.warn('[PEER ERROR]', err);
+      if (err.type === 'unavailable-id') {
+        // ID collision / lingering session: silently try another code
+        createRoomSession(retryCount + 1);
+      } else {
+        showToast(`Peer connection error: ${err.type || 'disconnected'}`, 'error');
+      }
+    });
+
+    peer.on('open', (id) => {
+      currentRoomCode = roomCode;
+      if (createdCodeDisplay) createdCodeDisplay.textContent = roomCode;
+      if (createActions) createActions.classList.remove('hidden');
+      if (btnGenerateCode) btnGenerateCode.classList.add('hidden');
+      showToast(`Room ${roomCode} ready!`, 'success');
+    });
+
+    // Listen for incoming partner connection
+    peer.on('connection', (conn) => {
+      if (activeConn) {
+        conn.send({ type: 'error', message: 'Room is full (Max 2 participants).' });
+        setTimeout(() => conn.close(), 500);
+        return;
+      }
+      activeConn = conn;
+      setupConnectionListeners(conn);
+    });
+  }
+
   if (btnGenerateCode) {
     btnGenerateCode.addEventListener('click', () => {
       if (typeof Peer === 'undefined') {
@@ -310,34 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       showToast('Generating serverless room...', 'info');
-
-      // Random 6-digit numeric room code
-      const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const peerId = `chatling-v1-${roomCode}`;
-
-      if (peer) peer.destroy();
-
-      peer = new Peer(peerId, PEER_CONFIG);
-      setupPeerErrorHandlers(peer);
-
-      peer.on('open', (id) => {
-        currentRoomCode = roomCode;
-        if (createdCodeDisplay) createdCodeDisplay.textContent = roomCode;
-        if (createActions) createActions.classList.remove('hidden');
-        btnGenerateCode.classList.add('hidden');
-        showToast(`Room ${roomCode} ready!`, 'success');
-      });
-
-      // Listen for incoming partner connection
-      peer.on('connection', (conn) => {
-        if (activeConn) {
-          conn.send({ type: 'error', message: 'Room is full (Max 2 participants).' });
-          setTimeout(() => conn.close(), 500);
-          return;
-        }
-        activeConn = conn;
-        setupConnectionListeners(conn);
-      });
+      createRoomSession();
     });
   }
 
@@ -351,11 +425,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Copy Direct Link Button
+  // Copy / Share Direct Link Button (Supports Web Share API on mobile)
   if (btnCopyLink) {
-    btnCopyLink.addEventListener('click', () => {
+    btnCopyLink.addEventListener('click', async () => {
       if (currentRoomCode) {
         const shareUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomCode}`;
+        
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: 'Join my private chat on Chatling',
+              text: `Join my private 1-to-1 ephemeral chat room: ${currentRoomCode}`,
+              url: shareUrl
+            });
+            return;
+          } catch (err) {
+            // User cancelled or share dismissed, fallback to clipboard
+            if (err.name === 'AbortError') return;
+          }
+        }
+
         navigator.clipboard.writeText(shareUrl);
         showToast('Direct chat link copied to clipboard!', 'info');
       }
@@ -461,23 +550,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /**
+   * Leave Chat Room & Reset State
+   */
+  function leaveChatRoom(updateHistory = true) {
+    if (activeConn) activeConn.close();
+    if (peer) peer.destroy();
+    activeConn = null;
+    peer = null;
+    currentRoomCode = null;
+    partnerConnected = false;
+    stopHeartbeat();
+    if (chatView) chatView.classList.add('hidden');
+    if (homeView) homeView.classList.remove('hidden');
+    if (createActions) createActions.classList.add('hidden');
+    if (btnGenerateCode) btnGenerateCode.classList.remove('hidden');
+    if (createdCodeDisplay) createdCodeDisplay.textContent = '------';
+    if (joinCodeInput) joinCodeInput.value = '';
+    showToast('You left the chat room.', 'info');
+
+    // Clean up query param from URL without page reload
+    if (updateHistory && window.history && window.history.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
+
   if (btnLeaveChat) {
-    btnLeaveChat.addEventListener('click', () => {
-      if (activeConn) activeConn.close();
-      if (peer) peer.destroy();
-      activeConn = null;
-      peer = null;
-      currentRoomCode = null;
-      partnerConnected = false;
-      stopHeartbeat();
-      if (chatView) chatView.classList.add('hidden');
-      if (homeView) homeView.classList.remove('hidden');
-      if (createActions) createActions.classList.add('hidden');
-      if (btnGenerateCode) btnGenerateCode.classList.remove('hidden');
-      if (createdCodeDisplay) createdCodeDisplay.textContent = '------';
-      if (joinCodeInput) joinCodeInput.value = '';
-      showToast('You left the chat room.', 'info');
-    });
+    btnLeaveChat.addEventListener('click', () => leaveChatRoom(true));
   }
 
   // Send Message Trigger
@@ -488,6 +587,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tempId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const timestamp = new Date().toISOString();
+
+    // Reset input field immediately (standard chat app behavior)
+    messageInput.value = '';
 
     // Append outgoing bubble locally
     appendMessage({
@@ -506,21 +608,46 @@ document.addEventListener('DOMContentLoaded', () => {
         content,
         timestamp
       });
-    }
-
-    // Reset input field
-    messageInput.value = '';
-    if (activeConn && activeConn.open) {
       activeConn.send({ type: 'stop-typing' });
     }
     isTyping = false;
+    clearTimeout(typingTimeout);
+
+    // Close/dismiss mobile keyboard after message is sent
+    messageInput.blur();
+
+    scrollToBottom();
   }
 
-  if (btnSendMessage) btnSendMessage.addEventListener('click', handleSendMessage);
+  if (btnSendMessage) {
+    btnSendMessage.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+    btnSendMessage.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+  }
+
+  // Dismiss keyboard when user touches or clicks the blank background of the chat
+  if (chatMessages) {
+    const dismissKeyboard = (e) => {
+      // Don't blur if user tapped a button, link, or emoji within chat
+      if (e.target.closest('button, a, input, textarea')) return;
+      if (document.activeElement === messageInput) {
+        messageInput.blur();
+      }
+    };
+
+    chatMessages.addEventListener('touchstart', dismissKeyboard, { passive: true });
+    chatMessages.addEventListener('click', dismissKeyboard);
+  }
 
   if (messageInput) {
     messageInput.addEventListener('focus', () => {
-      setTimeout(() => scrollToBottom(), 300);
+      setTimeout(() => scrollToBottom(), 80);
+      setTimeout(() => scrollToBottom(), 250);
     });
 
     messageInput.addEventListener('keydown', (e) => {
@@ -546,9 +673,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Handle Mobile Virtual Keyboard (visualViewport) Viewport Adjustment
+  // Keep chat dynamically anchored to the bottom as the keyboard opens or closes
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
+      if (chatView && !chatView.classList.contains('hidden')) {
+        scrollToBottom();
+      }
+    });
+    window.visualViewport.addEventListener('scroll', () => {
       if (chatView && !chatView.classList.contains('hidden')) {
         scrollToBottom();
       }

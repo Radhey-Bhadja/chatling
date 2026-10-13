@@ -1,11 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap');
 
 :root {
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Primary Brand Gradients & Colors */
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
+  --color-accent: #06b6d4;
+
+  /* Theme Backgrounds */
+  --bg-light: #f8fafc;
+  --bg-dark: #0b0f19;
+
+  --panel-light: #ffffff;
+  --panel-dark: #131b2e;
+
+  --bubble-out-light: #d1fae5;
+  --bubble-out-dark: #064e3b;
+  --bubble-in-light: #ffffff;
+  --bubble-in-dark: #1e293b;
 }
 
-/* Base Light Theme Setup - Crisp & Clean Human Design */
+/* Dynamic Viewport Height for Mobile Browser URL Bar Safe-Area */
 html, body {
   height: 100dvh;
   width: 100vw;
@@ -13,48 +30,19 @@ html, body {
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  overscroll-behavior-y: none;
-  background-color: #f8fafc;
-  color: #0f172a;
 }
 
-/* Warm Friendly Background Gradient */
-.bright-hero-bg {
-  background: radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f0fdf4 40%, #f8fafc 80%);
-}
-
-/* Clean White Card Surface */
-.bright-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.07), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-}
-
-/* Circular Logo Image Mask */
-.circle-logo-frame {
-  width: 130px;
-  height: 130px;
-  border-radius: 9999px;
-  overflow: hidden;
-  border: 4px solid #ffffff;
-  box-shadow: 0 10px 25px -4px rgba(16, 185, 129, 0.2), 0 4px 10px rgba(0, 0, 0, 0.05);
-  background-color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-}
-
-.circle-logo-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Sleek Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
+}
+
+@media (min-width: 640px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 }
 
 ::-webkit-scrollbar-track {
@@ -62,75 +50,139 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(156, 163, 175, 0.3);
   border-radius: 9999px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(156, 163, 175, 0.5);
 }
 
-/* Chat Canvas Background */
+/* Chat Messages WhatsApp Scroll View */
+#chat-messages {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+
+#chat-messages > :first-child {
+  margin-top: auto !important;
+}
+
+/* Chat Background Mesh Pattern */
 .wa-chat-bg {
-  background-color: #f1f5f9;
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 60%),
-    radial-gradient(rgba(148, 163, 184, 0.2) 1.2px, transparent 1.2px);
-  background-size: 100% 100%, 20px 20px;
+  background-color: #efeae2;
+  background-image: radial-gradient(#d1c7b7 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
 }
 
-/* Chat Message Bubbles - Clean Human Aesthetic */
+.dark .wa-chat-bg {
+  background-color: #0b141a;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+/* Chat Message Bubbles */
 .bubble {
   position: relative;
-  max-width: 82%;
+  max-width: 88%;
   word-break: break-word;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
-  animation: bubble-in 0.2s ease-out;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  animation: bubble-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) ease-out;
 }
 
 @media (min-width: 640px) {
   .bubble {
-    max-width: 70%;
+    max-width: 75%;
   }
 }
 
 @media (min-width: 1024px) {
   .bubble {
-    max-width: 58%;
+    max-width: 65%;
   }
 }
 
 @keyframes bubble-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(6px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Outgoing Bubble - Vibrant Emerald Green */
 .bubble-out {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
-  border-radius: 18px 18px 2px 18px;
+  border-top-right-radius: 2px !important;
 }
 
-/* Incoming Bubble - Soft Pure White Panel */
+.dark .bubble-out {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #f8fafc;
+  border-top-right-radius: 2px !important;
+}
+
 .bubble-in {
   background-color: #ffffff;
   color: #0f172a;
-  border-radius: 18px 18px 18px 2px;
-  border: 1px solid #e2e8f0;
+  border-top-left-radius: 2px !important;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-/* Pulse indicator */
+.dark .bubble-in {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-top-left-radius: 2px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Tail styling */
+.bubble-out::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid #059669;
+  border-right: 6px solid transparent;
+}
+
+.dark .bubble-out::before {
+  border-top-color: #047857;
+}
+
+.bubble-in::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid #ffffff;
+  border-left: 6px solid transparent;
+}
+
+.dark .bubble-in::before {
+  border-top-color: #1e293b;
+}
+
+/* Status Pulse Animation */
 @keyframes pulse-emerald {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   }
   70% {
     transform: scale(1);
@@ -146,14 +198,48 @@ html, body {
   animation: pulse-emerald 2s infinite;
 }
 
-/* Typing indicator dots */
+/* Typing wave dots */
 .typing-dot {
-  animation: typing-wave 1.4s ease-in-out infinite;
+  animation: wave 1.3s linear infinite;
 }
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.typing-dot:nth-child(2) {
+  animation-delay: -1.1s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: -0.9s;
+}
 
-@keyframes typing-wave {
-  0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50% { transform: translateY(-4px); opacity: 1; }
+@keyframes wave {
+  0%, 60%, 100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Glassmorphic Aesthetic Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glow accent */
+.glow-primary {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+}
+
+.glow-subtle {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+.dark .glow-subtle {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
