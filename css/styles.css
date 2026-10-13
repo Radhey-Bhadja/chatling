@@ -62,16 +62,30 @@ html, body {
   background: rgba(156, 163, 175, 0.5);
 }
 
+/* Chat Messages WhatsApp Scroll View */
+#chat-messages {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+
+#chat-messages > :first-child {
+  margin-top: auto !important;
+}
+
 /* Chat Background Mesh Pattern */
 .wa-chat-bg {
-  background-color: #f1f5f9;
-  background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+  background-color: #efeae2;
+  background-image: radial-gradient(#d1c7b7 1.2px, transparent 1.2px);
   background-size: 18px 18px;
 }
 
 .dark .wa-chat-bg {
-  background-color: #0b0f17;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px);
+  background-color: #0b141a;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.2px, transparent 1.2px);
   background-size: 18px 18px;
 }
 

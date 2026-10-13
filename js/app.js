@@ -157,18 +157,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const bottomAnchor = document.getElementById('messages-bottom-anchor');
+
   /**
-   * Scroll Chat Window to Bottom
+   * Scroll Chat Window to Bottom (WhatsApp Style)
    */
   function scrollToBottom(behavior = 'smooth') {
-    if (chatMessages) {
-      requestAnimationFrame(() => {
-        chatMessages.scrollTo({
-          top: chatMessages.scrollHeight,
-          behavior
-        });
+    if (!chatMessages) return;
+    
+    // Primary anchor scroll
+    if (bottomAnchor) {
+      bottomAnchor.scrollIntoView({ behavior, block: 'end' });
+    } else {
+      chatMessages.scrollTo({
+        top: chatMessages.scrollHeight,
+        behavior
       });
     }
+
+    // Safety fallback for mobile browser reflows (e.g. keyboard animation)
+    setTimeout(() => {
+      if (bottomAnchor) {
+        bottomAnchor.scrollIntoView({ behavior: 'auto', block: 'end' });
+      } else {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }, 120);
   }
 
   /**
@@ -221,7 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     wrapper.appendChild(bubble);
-    chatMessages.appendChild(wrapper);
+    if (bottomAnchor && bottomAnchor.parentNode === chatMessages) {
+      chatMessages.insertBefore(wrapper, bottomAnchor);
+    } else {
+      chatMessages.appendChild(wrapper);
+    }
     scrollToBottom();
   }
 
