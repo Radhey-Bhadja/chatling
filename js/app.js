@@ -108,14 +108,17 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function switchHomeTab(tab) {
     if (!tabCreate || !tabJoin || !sectionCreate || !sectionJoin) return;
+    const activeClass = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl bg-emerald-500 text-white shadow-sm transition-all cursor-pointer';
+    const inactiveClass = 'flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900';
+
     if (tab === 'create') {
-      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
-      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
+      tabCreate.className = activeClass;
+      tabJoin.className = inactiveClass;
       sectionCreate.classList.remove('hidden');
       sectionJoin.classList.add('hidden');
     } else {
-      tabJoin.className = 'flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-wa-headerdark text-wa-green shadow-sm transition-all cursor-pointer';
-      tabCreate.className = 'flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer';
+      tabJoin.className = activeClass;
+      tabCreate.className = inactiveClass;
       sectionJoin.classList.remove('hidden');
       sectionCreate.classList.add('hidden');
       if (joinCodeInput) joinCodeInput.focus();
