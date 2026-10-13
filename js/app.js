@@ -537,10 +537,9 @@ document.addEventListener('DOMContentLoaded', () => {
     isTyping = false;
     clearTimeout(typingTimeout);
 
-    // Keep input focused and ensure smooth scrolling on mobile
-    if (window.innerWidth <= 768) {
-      messageInput.focus();
-    }
+    // Close/dismiss mobile keyboard after message is sent
+    messageInput.blur();
+
     scrollToBottom();
   }
 
@@ -549,17 +548,30 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       handleSendMessage();
     });
-    // Support touch devices where tap might lose focus or delay submit
     btnSendMessage.addEventListener('touchend', (e) => {
       e.preventDefault();
       handleSendMessage();
     });
   }
 
+  // Dismiss keyboard when user touches or clicks the blank background of the chat
+  if (chatMessages) {
+    const dismissKeyboard = (e) => {
+      // Don't blur if user tapped a button, link, or emoji within chat
+      if (e.target.closest('button, a, input, textarea')) return;
+      if (document.activeElement === messageInput) {
+        messageInput.blur();
+      }
+    };
+
+    chatMessages.addEventListener('touchstart', dismissKeyboard, { passive: true });
+    chatMessages.addEventListener('click', dismissKeyboard);
+  }
+
   if (messageInput) {
     messageInput.addEventListener('focus', () => {
-      setTimeout(() => scrollToBottom(), 100);
-      setTimeout(() => scrollToBottom(), 300);
+      setTimeout(() => scrollToBottom(), 80);
+      setTimeout(() => scrollToBottom(), 250);
     });
 
     messageInput.addEventListener('keydown', (e) => {
@@ -585,9 +597,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Handle Mobile Virtual Keyboard (visualViewport) Viewport Adjustment
+  // Keep chat dynamically anchored to the bottom as the keyboard opens or closes
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
+      if (chatView && !chatView.classList.contains('hidden')) {
+        scrollToBottom();
+      }
+    });
+    window.visualViewport.addEventListener('scroll', () => {
       if (chatView && !chatView.classList.contains('hidden')) {
         scrollToBottom();
       }
