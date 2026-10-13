@@ -613,8 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
     isTyping = false;
     clearTimeout(typingTimeout);
 
-    // Close/dismiss mobile keyboard after message is sent
-    messageInput.blur();
+    // Keep keyboard open and input focused like WhatsApp
+    messageInput.focus();
 
     scrollToBottom();
   }
@@ -629,28 +629,49 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnSendMessage) {
-    btnSendMessage.addEventListener('click', (e) => {
+    // Use pointerdown/mousedown with preventDefault so clicking Send button never steals focus from input
+    const onSendClick = (e) => {
       e.preventDefault();
       handleSendMessage();
-    });
-    btnSendMessage.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      handleSendMessage();
-    });
+      messageInput.focus();
+    };
+    btnSendMessage.addEventListener('pointerdown', (e) => e.preventDefault());
+    btnSendMessage.addEventListener('mousedown', (e) => e.preventDefault());
+    btnSendMessage.addEventListener('click', onSendClick);
   }
 
-  // Dismiss keyboard when user touches or clicks the blank background/container of the chat
+  // Like WhatsApp: dismiss keyboard when user scrolls or taps the chat history
   if (chatMessages) {
     const dismissKeyboard = (e) => {
-      // Don't blur if user tapped a button, link, emoji, or message bubble text
-      if (e.target.closest('button, a, input, textarea, .bubble')) return;
+      // Don't blur if user tapped a button, link, or input
+      if (e.target && e.target.closest && e.target.closest('button, a, input, textarea')) return;
       if (document.activeElement === messageInput) {
         messageInput.blur();
       }
     };
 
+    // Touching/tapping blank chat area dismisses keyboard
     chatMessages.addEventListener('touchstart', dismissKeyboard, { passive: true });
     chatMessages.addEventListener('mousedown', dismissKeyboard);
+
+    // Scrolling the chat up dismisses keyboard (exact WhatsApp mobile behavior)
+    let isUserScrolling = false;
+    chatMessages.addEventListener('scroll', () => {
+      if (document.activeElement === messageInput && isUserScrolling) {
+        messageInput.blur();
+      }
+    }, { passive: true });
+
+    chatMessages.addEventListener('touchmove', () => {
+      isUserScrolling = true;
+      if (document.activeElement === messageInput) {
+        messageInput.blur();
+      }
+    }, { passive: true });
+
+    chatMessages.addEventListener('touchend', () => {
+      setTimeout(() => { isUserScrolling = false; }, 300);
+    }, { passive: true });
   }
 
   if (messageInput) {
