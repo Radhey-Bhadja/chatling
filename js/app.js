@@ -160,9 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * Scroll Chat Window to Bottom
    */
-  function scrollToBottom() {
+  function scrollToBottom(behavior = 'smooth') {
     if (chatMessages) {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      requestAnimationFrame(() => {
+        chatMessages.scrollTo({
+          top: chatMessages.scrollHeight,
+          behavior
+        });
+      });
     }
   }
 
@@ -489,6 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tempId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const timestamp = new Date().toISOString();
 
+    // Reset input field immediately (standard chat app behavior)
+    messageInput.value = '';
+
     // Append outgoing bubble locally
     appendMessage({
       id: tempId,
@@ -506,20 +514,33 @@ document.addEventListener('DOMContentLoaded', () => {
         content,
         timestamp
       });
-    }
-
-    // Reset input field
-    messageInput.value = '';
-    if (activeConn && activeConn.open) {
       activeConn.send({ type: 'stop-typing' });
     }
     isTyping = false;
+    clearTimeout(typingTimeout);
+
+    // Keep input focused and ensure smooth scrolling on mobile
+    if (window.innerWidth <= 768) {
+      messageInput.focus();
+    }
+    scrollToBottom();
   }
 
-  if (btnSendMessage) btnSendMessage.addEventListener('click', handleSendMessage);
+  if (btnSendMessage) {
+    btnSendMessage.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+    // Support touch devices where tap might lose focus or delay submit
+    btnSendMessage.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+  }
 
   if (messageInput) {
     messageInput.addEventListener('focus', () => {
+      setTimeout(() => scrollToBottom(), 100);
       setTimeout(() => scrollToBottom(), 300);
     });
 
